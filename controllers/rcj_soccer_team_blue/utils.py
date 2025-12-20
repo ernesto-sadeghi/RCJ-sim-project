@@ -23,14 +23,21 @@ def move_to (robot,x,y,s=False):
 
 # difference angle of head and ball 
     a = math.degrees(math.atan2((robot.xr-x),(robot.yr-y)))
-
-
+    #e =>  how much the robot must rotate to face the target.
     e= heading + a
-    if e> 180: e-=360
-    if e< -180: e-=360
 
 
-    if a> -90 and a < 90 :
+
+    # if you find it hard to understand , un-commnet these codes
+    # print("h:",heading)
+    # print('a:',a)
+    # print('e:',e)
+  
+    if e > 180: e -= 360
+    if e < -180: e += 360
+
+
+    if e> -90 and e < 90 :
         right_speed =10+e*0.3
         left_speed = 10-e*0.3
     else:
@@ -44,7 +51,7 @@ def move_to (robot,x,y,s=False):
     if left_speed > 10 : left_speed = 10
     if left_speed < -10 : left_speed = -10
 
-    if abs(robot.xr-x) <0.01 and abs(robot.yr-y) < 0.01 and s :
+    if abs(robot.xr-x) < 0.01 and abs(robot.yr-y) < 0.01 and s :
         stop(robot)
     else:
             

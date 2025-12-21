@@ -18,6 +18,14 @@ class MyRobot1(RCJSoccerRobot):
             if self.is_new_data():
                 utils.readData(self)
                 if self.is_ball:
-                    utils.move_to(self,self.xb,0.55)
+                    x = self.xb
+                    if x > 0.3 : x = 0.4
+                    if x < -0.3 : x = -0.4
+                   
+                    if self.yb < 0.4:
+                        utils.move_to(self,x,0.55)
+                    else:
+                        utils.move_to(self,self.xb,self.yb)
+
                 else:
                     utils.move_to(self,0,0.55,s=True)

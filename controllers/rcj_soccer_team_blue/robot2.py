@@ -17,7 +17,12 @@ class MyRobot2(RCJSoccerRobot):
                 utils.readData(self)
 
                 if self.is_ball:
-                    if state == 1:
+                    if self.ball_stop_time >3 and not self.nearest_to_ball:
+                        # utils.stop(self)
+                        utils.move_to(self,self.nearest_ns[2],self.nearest_ns[3],s=True)
+                        state=2
+                    elif state == 1:
+                    
                         utils.move_to(self,self.xb,self.yb+0.15)
                         if abs(self.xb-self.xr) <0.01 and abs((self.yb+0.15)-self.yr) < 0.05 :
                             state=2

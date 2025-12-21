@@ -1,9 +1,17 @@
 
 
 import math 
+import time
 
-
-
+NEUTRAL_SPOTS =[
+ [0, 0,0,-0.1],
+ [-0.3, -0.3,-0.4,-0.4],
+ [0, -0.2,0,-0.4],
+ [0.3, -0.3,0.4,-0.4],
+ [0.3, 0.3,0.4,0.3],
+ [0, 0.2,0,0],
+ [-0.3, 0.3,-0.4,0.2],
+]
 # this able robots to cummunicate
 def definitions(robot):
     robot.heading=0
@@ -12,7 +20,14 @@ def definitions(robot):
     robot.xb=0
     robot.yb=0
     robot.is_ball=False
-
+    robot.lxb=0
+    robot.lyb=0
+    robot.ball_stop_time = 0
+    robot.last_time = time.time()
+    robot.nearest_ns = [0,0,0,0]
+    robot.ball_distance =0
+    robot.robot_poses  =[[0,0,0],[0,0,0],[0,0,0]]
+    robot.nearest_to_ball = False
 
 def move_to (robot,x,y,s=False):
     """
@@ -92,10 +107,10 @@ def readData(robot):
     if robot.is_new_ball_data():
         ball_data = robot.get_new_ball_data()
         ball_angle = math.degrees(math.atan2(ball_data["direction"][1],ball_data["direction"][0]))
-        ball_distance= abs(0.01666666/(abs(ball_data["direction"][2])/math.sqrt(1-ball_data["direction"][2]**2)))
+        robot.ball_distance= abs(0.01666666/(abs(ball_data["direction"][2])/math.sqrt(1-ball_data["direction"][2]**2)))
 
-        robot.xb = math.sin(math.radians(ball_angle+robot.heading))*ball_distance +robot.xr
-        robot.yb = -math.cos(math.radians(ball_angle+robot.heading))*ball_distance +robot.yr
+        robot.xb = math.sin(math.radians(ball_angle+robot.heading))*robot.ball_distance +robot.xr
+        robot.yb = -math.cos(math.radians(ball_angle+robot.heading))*robot.ball_distance +robot.yr
         
         robot.is_ball =True
     else:
@@ -106,6 +121,7 @@ def readData(robot):
         'yr':robot.yr,
         'xb':robot.xb,
         'yb':robot.yb,
+        'ball_dis' :robot.ball_distance,
         'id':robot.player_id
     })
         
@@ -120,3 +136,42 @@ def readData(robot):
             robot.is_ball =True
             robot.xb = team_data["xb"]
             robot.yb = team_data["yb"]
+            robot.ball_distance = math.sqrt((robot.xb-robot.xr)**2+(robot.yb-robot.yr)**2)
+        robot.robot_poses[team_data["id"]-1] = [team_data["xr"],team_data["yr"],team_data["ball_dis"]]
+    robot.robot_poses[robot.player_id-1] = [robot.xr,robot.yr,robot.ball_distance]
+
+    min_distance = robot.robot_poses[0][2]
+    index = 0 
+    for i in range(3):
+        if robot.robot_poses[i][2] < min_distance:
+            min_distance =robot.robot_poses[i][2]
+            index =i
+    if robot.player_id == index+1 :
+        robot.nearest_to_ball = True
+        # print(robot.player_id)
+    else:
+        robot.nearest_to_ball = False
+
+
+
+
+
+    #  computing ball stop duration
+    if time.time() - robot.last_time >1 :
+        v = math.sqrt((robot.xb-robot.lxb)**2+(robot.yb-robot.lyb)**2)
+        if v <0.1:
+            robot.ball_stop_time +=1
+        else:
+            robot.ball_stop_time =0
+
+        robot.last_time =time.time()
+
+        robot.lxb = robot.xb
+        robot.lyb = robot.yb
+    m = math.sqrt((NEUTRAL_SPOTS[0][0] -robot.xb)**2+(NEUTRAL_SPOTS[0][1]-robot.yb)**2)
+    robot.nearest_ns = NEUTRAL_SPOTS[0]
+    for pos in NEUTRAL_SPOTS:
+        d =math.sqrt((pos[0]-robot.xb)**2+(pos[1]-robot.yb)**2) 
+        if d <m :
+            m=d
+            robot.nearest_ns = pos

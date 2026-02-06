@@ -15,13 +15,18 @@ NEUTRAL_SPOTS =[
 # this able robots to cummunicate
 def definitions(robot):
     robot.heading=0
+
     robot.xr=0
     robot.yr=0
+
     robot.xb=0
     robot.yb=0
+
     robot.is_ball=False
+
     robot.lxb=0
     robot.lyb=0
+
     robot.ball_stop_time = 0
     robot.last_time = time.time()
     robot.nearest_ns = [0,0,0,0]
@@ -104,17 +109,27 @@ def readData(robot):
         robot.xr *= -1
         robot.yr *= -1
 
-    if robot.is_new_ball_data():
-        ball_data = robot.get_new_ball_data()
-        ball_angle = math.degrees(math.atan2(ball_data["direction"][1],ball_data["direction"][0]))
-        robot.ball_distance= abs(0.01666666/(abs(ball_data["direction"][2])/math.sqrt(1-ball_data["direction"][2]**2)))
 
+    # update ball location if detected or keep the last data if it wasnt detected  
+    if robot.is_new_ball_data():
+
+        ball_data = robot.get_new_ball_data()
+        
+        ball_angle = math.degrees(  math.atan2(ball_data["direction"][1]  ,   ball_data["direction"][0]) )
+
+        robot.ball_distance= abs(                      0.01666666   /  
+                                     (    abs(ball_data["direction"][2]) / math.sqrt(1-ball_data["direction"][2]**2)    )  
+                                )
+
+
+        # FINDING BALL LOCATION  (X,Y) 
         robot.xb = math.sin(math.radians(ball_angle+robot.heading))*robot.ball_distance +robot.xr
         robot.yb = -math.cos(math.radians(ball_angle+robot.heading))*robot.ball_distance +robot.yr
         
         robot.is_ball =True
     else:
         robot.is_ball =False
+    # send last data 
     robot.send_data_to_team({
         'is_ball':robot.is_ball,
         'xr':robot.xr,
@@ -125,7 +140,7 @@ def readData(robot):
         'id':robot.player_id
     })
         
-    # To notfy all robots whenever the ball is detected by any robot. 
+    # To update robot ball location from team data
     while robot.is_new_team_data():
 
         # print(robot.get_new_team_data())    //==>  {'robot_id': {'is_ball': True, 'xr': -0.25333272879690055, 'yr': 0.26441205057572287, 'xb': -0.14169967192514168, 'yb': 0.14789680353410498, 'id': 2}}
@@ -137,9 +152,16 @@ def readData(robot):
             robot.xb = team_data["xb"]
             robot.yb = team_data["yb"]
             robot.ball_distance = math.sqrt((robot.xb-robot.xr)**2+(robot.yb-robot.yr)**2)
+
+
         robot.robot_poses[team_data["id"]-1] = [team_data["xr"],team_data["yr"],team_data["ball_dis"]]
+    
+    # update robot location based on himself if he didnt have team data
     robot.robot_poses[robot.player_id-1] = [robot.xr,robot.yr,robot.ball_distance]
 
+
+
+    # finding nearest robot
     min_distance = robot.robot_poses[0][2]
     index = 0 
     for i in range(3):
@@ -168,6 +190,10 @@ def readData(robot):
 
         robot.lxb = robot.xb
         robot.lyb = robot.yb
+
+
+
+    # setting nearest neutral spot
     m = math.sqrt((NEUTRAL_SPOTS[0][0] -robot.xb)**2+(NEUTRAL_SPOTS[0][1]-robot.yb)**2)
     robot.nearest_ns = NEUTRAL_SPOTS[0]
     for pos in NEUTRAL_SPOTS:

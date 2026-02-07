@@ -18,18 +18,28 @@ class MyRobot2(RCJSoccerRobot):
 
                 if self.is_ball:
                     if self.ball_stop_time >3 and not self.nearest_to_ball:
+                        # print("lets go")
                         # utils.stop(self)
                         utils.move_to(self,self.nearest_ns[2],self.nearest_ns[3],s=True)
                         state=2
                     elif state == 1:
-                    
-                        utils.move_to(self,self.xb,self.yb+0.15)
+                        dx = 0 - self.xb
+                        dy = -0.7 - self.yb
+                        norm = math.sqrt(dx*dx + dy*dy)
+
+                        behind_x = self.xb - dx/norm * 0.01
+                        behind_y = self.yb - dy/norm * 0.15
+
+                        utils.move_to(self, behind_x, behind_y)
+
+                        # utils.move_to(self,self.xb,self.yb+0.15)
                         if abs(self.xb-self.xr) <0.01 and abs((self.yb+0.15)-self.yr) < 0.05 :
                             state=2
                     elif state ==2:
-                        utils.move_to(self,self.xb,self.yb)
+                        # utils.move_to(self,self.xb,self.yb)
+                        utils.move_to(self,0,-0.9)
                         if abs(self.xb-self.xr) > 0.2 and abs(self.yb-self.yr) > 0.2 :
-                            state=2
+                            state=1
                 else:
 
-                   utils.move_to(self,0.3,0.2,s=True)
+                   utils.move_to(self,-0.3,0.2,s=True)

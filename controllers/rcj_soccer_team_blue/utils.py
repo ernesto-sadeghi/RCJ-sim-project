@@ -14,6 +14,34 @@ NEUTRAL_SPOTS =[
 ]
 # this able robots to cummunicate
 def definitions(robot):
+    """
+    heading=0
+
+    xr=0
+    yr=0
+
+    xb=0
+    yb=0
+
+    is_ball=False
+
+    lxb=0
+    lyb=0
+
+    ball_stop_time = 0
+
+    last_time = time.time()
+
+    nearest_ns = [0,0,0,0]
+
+    ball_distance =0
+
+    robot_poses  =[[0,0,0],[0,0,0],[0,0,0]]
+    
+    nearest_to_ball = False
+
+
+    """
     robot.heading=0
 
     robot.xr=0
